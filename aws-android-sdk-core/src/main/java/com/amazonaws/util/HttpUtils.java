@@ -235,6 +235,8 @@ public class HttpUtils {
     public static String appendUri(final String baseUri, String path,
             final boolean escapeDoubleSlash) {
         String resultUri = baseUri;
+        android.util.Log.e("appendUri baseUri", baseUri);
+        android.util.Log.e("appendUri resultUri", resultUri);
         if (path != null && path.length() > 0) {
             if (path.startsWith("/")) {
                 // trim the trailing slash in baseUri, since the path already
@@ -246,6 +248,7 @@ public class HttpUtils {
                 resultUri += "/";
             }
             String encodedPath = HttpUtils.urlEncode(path, true);
+            android.util.Log.e("appendUri encodedPath", encodedPath);
             if (escapeDoubleSlash) {
                 encodedPath = encodedPath.replace("//", "/%2F");
             }

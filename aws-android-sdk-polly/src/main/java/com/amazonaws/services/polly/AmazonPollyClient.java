@@ -29,7 +29,7 @@ import com.amazonaws.util.AWSRequestMetrics.Field;
 
 import com.amazonaws.services.polly.model.*;
 import com.amazonaws.services.polly.model.transform.*;
-
+import android.util.Log;
 /**
  * Client for accessing Amazon Polly. All service calls made using this client
  * are blocking, and will not return until the service call completes.
@@ -568,6 +568,9 @@ public class AmazonPollyClient extends AmazonWebServiceClient implements AmazonP
             } finally {
                 awsRequestMetrics.endEvent(Field.RequestMarshallTime);
             }
+            String path = request.getResourcePath() ; 
+            Log.e("getResourcePath", path);    
+            
             Unmarshaller<ListLexiconsResult, JsonUnmarshallerContext> unmarshaller = new ListLexiconsResultJsonUnmarshaller();
             JsonResponseHandler<ListLexiconsResult> responseHandler = new JsonResponseHandler<ListLexiconsResult>(
                     unmarshaller);

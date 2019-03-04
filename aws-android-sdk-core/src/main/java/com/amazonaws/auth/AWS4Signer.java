@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-
+//import android.util.Log;
 /**
  * Signer implementation that signs requests with the AWS4 signing protocol.
  */
@@ -250,6 +250,19 @@ public class AWS4Signer extends AbstractAWSSigner
 
     protected String getCanonicalRequest(Request<?> request, String contentSha256) {
         /* This would url-encode the resource path for the first time */
+        if(request.getEndpoint() == null)
+        {
+            android.util.Log.e("1request.getEndpoint()", "is null") ;
+        }
+        else 
+        {
+            if (request.getEndpoint().getPath() == null )
+            {
+                android.util.Log.e("1request.getEndpoint()getPath()", "is null") ;
+            }
+           android.util.Log.e("1request.getEndpoint().getPath:", request.getEndpoint().getPath()); 
+
+        }      
         final String path = HttpUtils.appendUri(request.getEndpoint().getPath(),
                 request.getResourcePath());
 
