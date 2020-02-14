@@ -40,6 +40,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
+import java.net.Socket;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -771,6 +772,14 @@ public class AWSIotMqttManager {
         connect(keyStore, 8883, statusCallback);
     }
 
+    public void connectWithProxyOverWebsockets(KeyStore keyStore, final String proxyHost, final int proxyPort,
+                                     final AWSIotMqttClientStatusCallback statusCallback) {
+        this.proxyHost = proxyHost;
+        this.proxyPort = proxyPort;
+        connect(keyStore, 8883, statusCallback,
+                AWSIotSslUtility.getSocketFactoryWithProxy(proxyHost, proxyPort));
+    }
+
     /**
      * Initializes the MQTT session and connects to the specified MQTT server
      * using certificate and private key in keystore on port 8883. Keystore should be created
@@ -799,7 +808,10 @@ public class AWSIotMqttManager {
      *            status.
      */
     private void connect(KeyStore keyStore, int portNumber, final AWSIotMqttClientStatusCallback statusCallback) {
+        connect(keyStore, portNumber, statusCallback, null);
+    }
 
+    private void connect(KeyStore keyStore, int portNumber, final AWSIotMqttClientStatusCallback statusCallback, SocketFactory socketOverride) {
         if (Build.VERSION.SDK_INT < ANDROID_API_LEVEL_16) {
             throw new UnsupportedOperationException(
                     "API Level 16+ required for TLS 1.2 Mutual Auth");
@@ -825,7 +837,7 @@ public class AWSIotMqttManager {
                             region.getDomain(),portNumber);
         } else {
             throw new IllegalStateException("No valid endpoint information is available. " +
-                "Please pass in a valid endpoint in AWSIotMqttManager.");
+                    "Please pass in a valid endpoint in AWSIotMqttManager.");
         }
 
         authMode = AuthenticationMode.KEYSTORE;
@@ -836,9 +848,11 @@ public class AWSIotMqttManager {
                 mqttClient = new MqttAsyncClient(mqttBrokerURL, mqttClientId, new MemoryPersistence());
             }
 
-            final SocketFactory socketFactory = (proxyHost != null) ?
-                    AWSIotSslUtility.getSocketFactoryWithKeyStoreAndProxy(keyStore, portNumber, proxyHost, proxyPort):
-                    AWSIotSslUtility.getSocketFactoryWithKeyStore(keyStore, portNumber) ;
+            final SocketFactory socketFactory = (socketOverride != null) ?
+                    socketOverride:
+                    (proxyHost != null) ?
+                        AWSIotSslUtility.getSocketFactoryWithKeyStoreAndProxy(keyStore, portNumber, proxyHost, proxyPort):
+                        AWSIotSslUtility.getSocketFactoryWithKeyStore(keyStore, portNumber) ;
 
             final MqttConnectOptions options = new MqttConnectOptions();
 

@@ -15,12 +15,15 @@
 
 package com.amazonaws.mobileconnectors.iot;
 
+import com.amazonaws.AmazonClientException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
-
+import java.net.SocketException;
+import java.net.Proxy.Type;
 import javax.net.ssl.SSLSocketFactory;
 
 public class AWSIotProxiedSocketFactory extends SSLSocketFactory {
@@ -29,7 +32,12 @@ public class AWSIotProxiedSocketFactory extends SSLSocketFactory {
 
     public AWSIotProxiedSocketFactory(SSLSocketFactory delegate, String proxyHost, int proxyPort){
         this.socketFactory = delegate;
-        this.proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(proxyHost, proxyPort));
+        this.proxy = new Proxy(Type.SOCKS, new InetSocketAddress(proxyHost, proxyPort));
+    }
+
+    public AWSIotProxiedSocketFactory(String proxyHost, int proxyPort) {
+        this.socketFactory = null;
+        this.proxy = new Proxy(Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
     }
 
     @Override
@@ -42,9 +50,28 @@ public class AWSIotProxiedSocketFactory extends SSLSocketFactory {
         return socketFactory.getSupportedCipherSuites();
     }
 
-    @Override
-    public Socket createSocket(){
-        return new AWSIotProxiedSSLSocket(socketFactory, new Socket(proxy));
+    public Socket createSocket() throws IOException {
+        Socket sock = new Socket(this.proxy);
+        String proxyConnect = "CONNECT ";
+        proxyConnect.concat("\n\n");
+        sock.getOutputStream().write(proxyConnect.getBytes());
+        byte[] tmpBuffer = new byte[512];
+        InputStream socketInput = sock.getInputStream();
+        int len = socketInput.read(tmpBuffer, 0, tmpBuffer.length);
+        if (len == 0) {
+            throw new SocketException("Invalid response from proxy");
+        } else {
+            String proxyResponse = new String(tmpBuffer, 0, len, "UTF-8");
+            if (proxyResponse.indexOf("200") != -1) {
+                if (socketInput.available() > 0) {
+                    socketInput.skip((long)socketInput.available());
+                }
+
+                return sock;
+            } else {
+                throw new AmazonClientException("Fail to create Socket");
+            }
+        }
     }
 
     @Override
@@ -70,5 +97,41 @@ public class AWSIotProxiedSocketFactory extends SSLSocketFactory {
     @Override
     public Socket createSocket(InetAddress inetAddress, int i, InetAddress inetAddress1, int i1) throws IOException {
         return socketFactory.createSocket(inetAddress, i, inetAddress1, i1);
+    }
+
+    private static class Base64 {
+        private static final char[] ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
+
+        private Base64() {
+        }
+
+        public static String encode(byte[] buf) {
+            int size = buf.length;
+            char[] ar = new char[(size + 2) / 3 * 4];
+            int a = 0;
+
+            byte b2;
+            byte mask;
+            for(int i = 0; i < size; ar[a++] = ALPHABET[b2 & mask]) {
+                byte b0 = buf[i++];
+                byte b1 = i < size ? buf[i++] : 0;
+                b2 = i < size ? buf[i++] : 0;
+                mask = 63;
+                ar[a++] = ALPHABET[b0 >> 2 & mask];
+                ar[a++] = ALPHABET[(b0 << 4 | (b1 & 255) >> 4) & mask];
+                ar[a++] = ALPHABET[(b1 << 2 | (b2 & 255) >> 6) & mask];
+            }
+
+            switch(size % 3) {
+                case 1:
+                    --a;
+                    ar[a] = '=';
+                case 2:
+                    --a;
+                    ar[a] = '=';
+                default:
+                    return new String(ar);
+            }
+        }
     }
 }

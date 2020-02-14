@@ -107,4 +107,8 @@ final class AWSIotSslUtility {
             KeyManagementException, NoSuchProviderException {
         return new AWSIotProxiedSocketFactory(getSocketFactoryWithKeyStore(keyStore, portNumber), proxyHost, proxyPort);
     }
+
+    public static SSLSocketFactory getSocketFactoryWithProxy(String proxyHost, int proxyPort) {
+        return new AWSIotProxiedSocketFactory(proxyHost, proxyPort);
+    }
 }
