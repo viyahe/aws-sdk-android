@@ -1,3 +1,4 @@
+release_version=2.16.11
 echo "release_version=2.16.11"
 previousversion="2.16.10"
 echo "previousversion=$previousversion"
