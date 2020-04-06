@@ -1,5 +1,5 @@
-echo "release_version=$release_version"
-previousversion=$(grep -o "AWS SDK for Android - [0-9]\+.[0-9]\+.[0-9]\+" docs/reference/allclasses-frame.html | grep -o "[0-9]\+.[0-9]\+.[0-9]\+")
+echo "release_version=2.16.11"
+previousversion="2.16.10"
 echo "previousversion=$previousversion"
 previousminorversion=$(echo  "$previousversion" | sed  -e 's|[0-9]*\.\([0-9]*\)\.[0-9]*$|\1|')
 echo "previousminorversion=$previousminorversion"
