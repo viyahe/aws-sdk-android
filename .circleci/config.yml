@@ -462,7 +462,7 @@ jobs:
           name: generate documents
           command: |
             currentfolder=$(pwd)
-            python3 CircleciScripts/generate_javadoc.py CircleciScripts/ReleaseConfiguration.json "$currentfolder" build/javadoc third-party "$release_version"
+            python3 CircleciScripts/generate_javadoc.py CircleciScripts/ReleaseConfiguration.json "$currentfolder" build/javadoc third-party "2.16.11"
       - run:
           name: check out gh-pages and preserve old document
           command: |
@@ -481,14 +481,8 @@ jobs:
           command: |
             git add docs/reference
             git rm --cached  CircleciScripts/preserve_olddocument.sh
-            git commit -m "AWS SDK for Android $release_version"
-            if [ "$release_type" == "release" ]
-            then
-                git push -q https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git
-            else
-                echo "skip checkin API reference"
-                zip -r docs.zip docs
-            fi
+            git commit -m "AWS SDK for Android 2.16.11"
+            git push -q https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git
       - store_artifacts:
           path: "docs.zip"
       - save_cache:
@@ -500,13 +494,7 @@ jobs:
           command: |
             git config --local user.name "${GITHUB_USER}"
             git checkout  gh-pages
-
-            if [ "$release_type" == "release" ]
-            then
-                git tag -a "docs_v$release_version"  -m "Add documentation tags to version $release_version"
-            else
-                git tag -a "beta_docs_v$release_version"  -m "Add documentation tags to version $release_version"
-            fi
+            git tag -a "docs_v$release_version"  -m "Add documentation tags to version 2.16.11"
 
             git push --tags -q https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git
 
