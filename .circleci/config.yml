@@ -445,6 +445,7 @@ jobs:
     steps:
       - skip_job_if_required
       - checkout
+      - configure_aws
       - set_enviroment_variables
       - run:
           name: install python3-pip
