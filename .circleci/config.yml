@@ -1151,6 +1151,10 @@ workflows:
           filters:
             branches:
               ignore: bump_sdk_version
+      - release_javadoc:
+          filters:
+            branches:
+              ignore: bump_sdk_version
       - build_api18:
           filters:
             branches:
