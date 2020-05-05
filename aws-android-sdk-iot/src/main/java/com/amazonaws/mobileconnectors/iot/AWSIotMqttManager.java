@@ -658,6 +658,15 @@ public class AWSIotMqttManager {
     }
 
     /**
+     * Accessor method for session persistence flag.
+     *
+     * @return true if this is a clean Session with no state being persisted from a prior session.
+     */
+    public boolean getCleanSession() {
+        return cleanSession;
+    }
+
+    /**
      * Constructs a new AWSIotMqttManager.
      *
      * @param mqttClientId MQTT client ID to use with this client.
