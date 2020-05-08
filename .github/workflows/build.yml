@@ -1,0 +1,17 @@
+name: Tests
+
+on: [push]
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          token: ${{ secrets.GHA_PUSH_PULL_TOKEN }}
+      - name: Build with Gradle
+        run: ./gradlew :aws-android-sdk-mobile-client:assembleRelease
+      - name: Setup
+        run: ls aws-android-sdk-mobile-client/build/outputs/aar
