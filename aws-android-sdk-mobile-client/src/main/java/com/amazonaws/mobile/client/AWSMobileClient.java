@@ -1173,9 +1173,21 @@ public final class AWSMobileClient implements AWSCredentialsProvider {
                         public void getAuthenticationDetails(AuthenticationContinuation authenticationContinuation, String userId) {
                             Log.d(TAG, "Sending password.");
                             try {
-                                if (awsConfiguration.optJsonObject("Auth") != null && awsConfiguration.optJsonObject("Auth").has("authenticationFlowType") && awsConfiguration.optJsonObject("Auth").getString("authenticationFlowType").equals("CUSTOM_AUTH")) {
+                                if (awsConfiguration.optJsonObject("Auth") != null && awsConfiguration.optJsonObject("Auth").has("authenticationFlowType")) {
+                                    String authenticationType = awsConfiguration.optJsonObject("Auth").getString("authenticationFlowType");
                                     final HashMap<String, String> authParameters = new HashMap<String,String>();
-                                    authenticationContinuation.setAuthenticationDetails(new AuthenticationDetails(username, password, authParameters, validationData));
+
+                                    if (authenticationType.equals("USER_PASSWORD_AUTH")) {
+                                        AuthenticationDetails authenticationDetails = new AuthenticationDetails(username, password, null);
+                                        authenticationDetails.setAuthenticationType(CognitoServiceConstants.CHLG_TYPE_USER_PASSWORD);
+                                        authParameters.put("USERNAME", username);
+                                        authParameters.put("PASSWORD", password);
+                                        authenticationDetails.setAuthenticationParameters(authParameters);
+                                        authenticationContinuation.setAuthenticationDetails(authenticationDetails);
+                                    }
+                                    else if (authenticationType.equals("CUSTOM_AUTH")) {
+                                        authenticationContinuation.setAuthenticationDetails(new AuthenticationDetails(username, password, authParameters, validationData));
+                                    }
                                 } else {
                                     authenticationContinuation.setAuthenticationDetails(new AuthenticationDetails(username, password, validationData));
                                 }
